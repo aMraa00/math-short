@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="mn">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>10-ын зэргийн Sort & Match</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        .card {
+            transition: all 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+        }
+
+        .correct {
+            animation: correct 0.4s ease;
+        }
+
+        .wrong {
+            animation: wrong 0.35s ease;
+        }
+
+        @keyframes correct {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.08);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes wrong {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-8px);
+            }
+
+            75% {
+                transform: translateX(8px);
+            }
+        }
+
+        .number-line {
+            scrollbar-width: thin;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-100 min-h-screen text-slate-800">
+
+    <!-- HEADER -->
+    <header class="bg-indigo-700 text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 py-5">
+
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-bold">
+                        🧩 10-ын зэргийн Sort & Match
+                    </h1>
+
+                    <p class="text-indigo-100 mt-1">
+                        10⁻¹⁰-оос 10¹⁰ хүртэлх зэргийг ойлгож тоглоорой
+                    </p>
+                </div>
+
+                <div class="flex gap-3">
+
+                    <div class="bg-white/15 rounded-xl px-4 py-2 text-center">
+                        <div class="text-xs text-indigo-100">ОНОО</div>
+                        <div id="score" class="text-2xl font-bold">0</div>
+                    </div>
+
+                    <div class="bg-white/15 rounded-xl px-4 py-2 text-center">
+                        <div class="text-xs text-indigo-100">ЗӨВ</div>
+                        <div id="correctCount" class="text-2xl font-bold">0</div>
+                    </div>
+
+                    <div class="bg-white/15 rounded-xl px-4 py-2 text-center">
+                        <div class="text-xs text-indigo-100">АЛДАА</div>
+                        <div id="wrongCount" class="text-2xl font-bold">0</div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    </header>
+
+
+    <main class="max-w-7xl mx-auto px-4 py-6">
+
+        <!-- MODE -->
+        <section class="bg-white rounded-2xl shadow p-5 mb-6">
+
+            <div class="flex flex-col lg:flex-row gap-4 lg:items-center lg:justify-between">
+
+                <div>
+                    <h2 class="text-xl font-bold">
+                        🎮 Тоглоомын горим
+                    </h2>
+
+                    <p class="text-slate-500 text-sm mt-1">
+                        Зэрэг болон түүний утгыг зөв тааруул.
+                    </p>
+                </div>
+
+                <div class="flex flex-wrap gap-2">
+
+                    <button onclick="setMode('match')" id="matchModeBtn"
+                        class="px-4 py-2 rounded-xl bg-indigo-600 text-white font-semibold">
+                        🧩 Тааруулах
+                    </button>
+
+                    <button onclick="setMode('quiz')" id="quizModeBtn"
+                        class="px-4 py-2 rounded-xl bg-slate-200 font-semibold">
+                        ❓ Асуулт
+                    </button>
+
+                    <button onclick="newGame()" class="px-4 py-2 rounded-xl bg-emerald-500 text-white font-semibold">
+                        🔄 Шинээр эхлэх
+                    </button>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- CONCEPT -->
+        <section class="grid lg:grid-cols-3 gap-5 mb-6">
+
+            <!-- Current power -->
+            <div class="bg-white rounded-2xl shadow p-6 text-center">
+
+                <div class="text-sm text-slate-500 mb-2">
+                    Одоогийн зэрэг
+                </div>
+
+                <div id="currentPower" class="text-5xl font-bold text-indigo-600">
+                    10⁰
+                </div>
+
+                <div id="currentValue" class="text-2xl font-semibold mt-4">
+                    1
+                </div>
+
+            </div>
+
+
+            <!-- Explanation -->
+            <div class="bg-indigo-50 rounded-2xl border border-indigo-100 p-6">
+
+                <div class="font-bold text-indigo-800 mb-2">
+                    🧠 Санах дүрэм
+                </div>
+
+                <p id="explanation" class="text-indigo-900 leading-7">
+                    10⁰ = 1
+                </p>
+
+            </div>
+
+
+            <!-- Movement -->
+            <div class="bg-amber-50 rounded-2xl border border-amber-100 p-6">
+
+                <div class="font-bold text-amber-800 mb-2">
+                    ↔️ Нэг алхам
+                </div>
+
+                <p class="text-amber-900 leading-7">
+                    Зэрэг <b>+1</b> болбол
+                    <span class="font-bold">10-аар үржинэ.</span>
+                </p>
+
+                <p class="text-amber-900 leading-7">
+                    Зэрэг <b>-1</b> болбол
+                    <span class="font-bold">10-аар хуваагдана.</span>
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <!-- NUMBER LINE -->
+        <section class="bg-white rounded-2xl shadow p-5 mb-6">
+
+            <div class="flex items-center justify-between mb-4">
+
+                <div>
+                    <h2 class="text-lg font-bold">
+                        🪜 10-ын шат
+                    </h2>
+
+                    <p class="text-sm text-slate-500">
+                        Зэргийг зүүн, баруун тийш харьцуулж үзээрэй.
+                    </p>
+                </div>
+
+                <div class="flex gap-2">
+
+                    <button onclick="movePower(-1)"
+                        class="w-10 h-10 rounded-xl bg-slate-200 hover:bg-slate-300 font-bold">
+                        ←
+                    </button>
+
+                    <button onclick="movePower(1)"
+                        class="w-10 h-10 rounded-xl bg-slate-200 hover:bg-slate-300 font-bold">
+                        →
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <div id="numberLine" class="number-line flex gap-2 overflow-x-auto pb-3">
+            </div>
+
+        </section>
+
+
+        <!-- MATCH GAME -->
+        <section id="matchSection" class="bg-white rounded-2xl shadow p-5 mb-6">
+
+            <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-3 mb-5">
+
+                <div>
+                    <h2 class="text-xl font-bold">
+                        🧩 Зэрэг ба утгыг тааруул
+                    </h2>
+
+                    <p class="text-sm text-slate-500">
+                        Зүүн талын картыг сонгоод, дараа нь зөв хариуг сонго.
+                    </p>
+                </div>
+
+                <button onclick="showHint()" class="px-4 py-2 bg-amber-400 hover:bg-amber-500 rounded-xl font-bold">
+                    💡 Тусламж
+                </button>
+
+            </div>
+
+
+            <!-- Power cards -->
+            <div class="mb-6">
+
+                <h3 class="font-bold mb-3">
+                    1️⃣ Зэргийн карт
+                </h3>
+
+                <div id="powerCards" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+                </div>
+
+            </div>
+
+
+            <!-- Value cards -->
+            <div>
+
+                <h3 class="font-bold mb-3">
+                    2️⃣ Утгын карт
+                </h3>
+
+                <div id="valueCards" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+                </div>
+
+            </div>
+
+
+            <div id="matchMessage" class="mt-5 p-4 rounded-xl hidden">
+            </div>
+
+        </section>
+
+
+        <!-- QUIZ -->
+        <section id="quizSection" class="bg-white rounded-2xl shadow p-5 mb-6 hidden">
+
+            <div class="text-center">
+
+                <div class="text-sm text-slate-500">
+                    Асуулт
+                </div>
+
+                <div id="quizQuestion" class="text-4xl font-bold text-indigo-600 my-6">
+                </div>
+
+                <div id="quizAnswers" class="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-3xl mx-auto">
+                </div>
+
+                <div id="quizMessage" class="mt-5 p-4 rounded-xl hidden">
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- TEACHER EXPLANATION -->
+        <section class="bg-slate-900 text-white rounded-2xl p-6">
+
+            <h2 class="text-xl font-bold mb-4">
+                🧑‍🏫 Багшийн тайлбар
+            </h2>
+
+            <div class="grid md:grid-cols-3 gap-4">
+
+                <div class="bg-white/10 rounded-xl p-4">
+
+                    <div class="text-2xl mb-2">
+                        ➡️
+                    </div>
+
+                    <div class="font-bold">
+                        Зэрэг +1
+                    </div>
+
+                    <div class="text-slate-300 text-sm mt-2">
+                        10-аар үржинэ.
+                    </div>
+
+                    <div class="mt-3 font-mono">
+                        10² → 10³
+                    </div>
+
+                    <div class="text-slate-300">
+                        100 → 1000
+                    </div>
+
+                </div>
+
+
+                <div class="bg-white/10 rounded-xl p-4">
+
+                    <div class="text-2xl mb-2">
+                        ⬅️
+                    </div>
+
+                    <div class="font-bold">
+                        Зэрэг -1
+                    </div>
+
+                    <div class="text-slate-300 text-sm mt-2">
+                        10-аар хуваагдана.
+                    </div>
+
+                    <div class="mt-3 font-mono">
+                        10² → 10¹
+                    </div>
+
+                    <div class="text-slate-300">
+                        100 → 10
+                    </div>
+
+                </div>
+
+
+                <div class="bg-white/10 rounded-xl p-4">
+
+                    <div class="text-2xl mb-2">
+                        💡
+                    </div>
+
+                    <div class="font-bold">
+                        Сөрөг зэрэг
+                    </div>
+
+                    <div class="text-slate-300 text-sm mt-2">
+                        1-ийг 10-аар хуваасныг харуулна.
+                    </div>
+
+                    <div class="mt-3 font-mono">
+                        10⁻¹ = 0.1
+                    </div>
+
+                    <div class="text-slate-300">
+                        10⁻² = 0.01
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <script>
+
+        /*
+          =========================================
+          10-ЫН ЗЭРГИЙН SORT & MATCH GAME
+          =========================================
+        */
+
+        const powers = [];
+
+        for (let i = -10; i <= 10; i++) {
+            powers.push(i);
+        }
+
+
+        let currentExponent = 0;
+
+        let score = 0;
+        let correctCount = 0;
+        let wrongCount = 0;
+
+        let selectedPower = null;
+
+        let mode = "match";
+
+
+        /*
+          -----------------------------------------
+          HTML SPECIAL CHARACTERS
+          -----------------------------------------
+        */
+
+        function powerText(n) {
+
+            const superscript = {
+                "-": "⁻",
+                "0": "⁰",
+                "1": "¹",
+                "2": "²",
+                "3": "³",
+                "4": "⁴",
+                "5": "⁵",
+                "6": "⁶",
+                "7": "⁷",
+                "8": "⁸",
+                "9": "⁹"
+            };
+
+            return String(n)
+                .split("")
+                .map(c => superscript[c])
+                .join("");
+        }
+
+
+        /*
+          -----------------------------------------
+          10^n УТГА
+          -----------------------------------------
+        */
+
+        function powerValue(n) {
+
+            return Math.pow(10, n);
+
+        }
+
+
+        /*
+          Машин уншихад ойлгомжтой байдлаар
+          тоог форматлана.
+        */
+
+        function formatValue(n) {
+
+            if (n >= 1) {
+                return n.toLocaleString("en-US");
+            }
+
+            return n
+                .toFixed(Math.abs(Math.min(0, Math.floor(Math.log10(n)))))
+                .replace(/0+$/, "")
+                .replace(/\.$/, "");
+
+        }
+
+
+        /*
+          -----------------------------------------
+          ОДООГИЙН ЗЭРГИЙГ ШИНЭЧЛЭХ
+          -----------------------------------------
+        */
+
+        function updateCurrentPower() {
+
+            const value = powerValue(currentExponent);
+
+            document.getElementById("currentPower").textContent =
+                "10" + powerText(currentExponent);
+
+            document.getElementById("currentValue").textContent =
+                formatValue(value);
+
+
+            let explanation = "";
+
+            if (currentExponent === 0) {
+
+                explanation = "10⁰ = 1. Тэг зэрэг нь 1-тэй тэнцэнэ.";
+
+            }
+
+            else if (currentExponent > 0) {
+
+                explanation =
+                    `10${powerText(currentExponent)} = ${formatValue(value)}. ` +
+                    `Зэрэг нь ${currentExponent} тул 1-ийн ард ${currentExponent} ширхэг 0 байна.`;
+
+            }
+
+            else {
+
+                explanation =
+                    `10${powerText(currentExponent)} = ${formatValue(value)}. ` +
+                    `Сөрөг зэрэг тул 1-ийг 10-аар ${Math.abs(currentExponent)} удаа хуваасан гэсэн үг.`;
+
+            }
+
+            document.getElementById("explanation").textContent =
+                explanation;
+
+            renderNumberLine();
+
+        }
+
+
+        /*
+          -----------------------------------------
+          NUMBER LINE
+          -----------------------------------------
+        */
+
+        function renderNumberLine() {
+
+            const container =
+                document.getElementById("numberLine");
+
+            container.innerHTML = "";
+
+            powers.forEach(n => {
+
+                const value = powerValue(n);
+
+                const button =
+                    document.createElement("button");
+
+                button.className =
+                    `min-w-[105px] p-3 rounded-xl border-2 text-center card
+          ${n === currentExponent
+                        ? "border-indigo-600 bg-indigo-50 text-indigo-700"
+                        : "border-slate-200 bg-white hover:border-indigo-300"}`;
+
+                button.innerHTML = `
+
+          <div class="font-bold text-lg">
+            10${powerText(n)}
+          </div>
+
+          <div class="text-xs text-slate-500 mt-1">
+            ${formatValue(value)}
+          </div>
+
+        `;
+
+                button.onclick = () => {
+
+                    currentExponent = n;
+
+                    updateCurrentPower();
+
+                };
+
+                container.appendChild(button);
+
+            });
+
+        }
+
+
+        /*
+          -----------------------------------------
+          НЭГ ЗЭРГЭЭР ХӨДӨЛГӨХ
+          -----------------------------------------
+        */
+
+        function movePower(direction) {
+
+            currentExponent += direction;
+
+            if (currentExponent > 10) {
+                currentExponent = 10;
+            }
+
+            if (currentExponent < -10) {
+                currentExponent = -10;
+            }
+
+            updateCurrentPower();
+
+        }
+
+
+        /*
+          -----------------------------------------
+          MATCH GAME
+          -----------------------------------------
+        */
+
+        function createMatchCards() {
+
+            selectedPower = null;
+
+            const powerContainer =
+                document.getElementById("powerCards");
+
+            const valueContainer =
+                document.getElementById("valueCards");
+
+            powerContainer.innerHTML = "";
+            valueContainer.innerHTML = "";
+
+            /*
+              10 санамсаргүй зэрэг сонгоно.
+            */
+
+            const selected = [...powers]
+                .sort(() => Math.random() - 0.5)
+                .slice(0, 10);
+
+
+            /*
+              Зэргийн картууд
+            */
+
+            selected.forEach(n => {
+
+                const card =
+                    document.createElement("button");
+
+                card.className =
+                    "card bg-indigo-50 border-2 border-indigo-200 " +
+                    "rounded-xl p-4 text-center hover:bg-indigo-100";
+
+                card.innerHTML = `
+
+          <div class="text-2xl font-bold text-indigo-700">
+            10${powerText(n)}
+          </div>
+
+          <div class="text-xs text-slate-500 mt-1">
+            зэргийг сонго
+          </div>
+
+        `;
+
+                card.onclick = () => {
+
+                    selectedPower = n;
+
+                    document.querySelectorAll("#powerCards button")
+                        .forEach(btn => {
+
+                            btn.classList.remove(
+                                "ring-4",
+                                "ring-indigo-300"
+                            );
+
+                        });
+
+                    card.classList.add(
+                        "ring-4",
+                        "ring-indigo-300"
+                    );
+
+                };
+
+                powerContainer.appendChild(card);
+
+            });
+
+
+            /*
+              Утгын картуудыг хольж байрлуулна.
+            */
+
+            const shuffledValues =
+                [...selected].sort(
+                    () => Math.random() - 0.5
+                );
+
+
+            shuffledValues.forEach(n => {
+
+                const card =
+                    document.createElement("button");
+
+                card.dataset.value = n;
+
+                card.className =
+                    "card bg-emerald-50 border-2 border-emerald-200 " +
+                    "rounded-xl p-4 text-center hover:bg-emerald-100";
+
+                card.innerHTML = `
+
+          <div class="text-xl font-bold text-emerald-700">
+            ${formatValue(powerValue(n))}
+          </div>
+
+          <div class="text-xs text-slate-500 mt-1">
+            утгыг сонго
+          </div>
+
+        `;
+
+                card.onclick = () => {
+
+                    checkMatch(n, card);
+
+                };
+
+                valueContainer.appendChild(card);
+
+            });
+
+        }
+
+
+        /*
+          -----------------------------------------
+          MATCH CHECK
+          -----------------------------------------
+        */
+
+        function checkMatch(valueExponent, card) {
+
+            const message =
+                document.getElementById("matchMessage");
+
+
+            if (selectedPower === null) {
+
+                message.className =
+                    "mt-5 p-4 rounded-xl bg-amber-100 text-amber-800";
+
+                message.textContent =
+                    "👆 Эхлээд зэргийн картыг сонгоно уу.";
+
+                return;
+
+            }
+
+
+            if (selectedPower === valueExponent) {
+
+                score += 10;
+                correctCount++;
+
+                document.getElementById("score").textContent =
+                    score;
+
+                document.getElementById("correctCount").textContent =
+                    correctCount;
+
+
+                card.classList.add("correct");
+
+                card.disabled = true;
+
+                message.className =
+                    "mt-5 p-4 rounded-xl bg-green-100 text-green-800";
+
+                message.innerHTML =
+                    `🎉 Зөв! 10${powerText(selectedPower)} = ` +
+                    `<b>${formatValue(powerValue(selectedPower))}</b>`;
+
+
+                /*
+                  Сонгосон зэрэг картыг disable болгоно.
+                */
+
+                document.querySelectorAll("#powerCards button")
+                    .forEach(btn => {
+
+                        if (
+                            btn.textContent.includes(
+                                "10" + powerText(selectedPower)
+                            )
+                        ) {
+
+                            btn.disabled = true;
+
+                            btn.classList.add(
+                                "opacity-40",
+                                "cursor-not-allowed"
+                            );
+
+                        }
+
+                    });
+
+
+                selectedPower = null;
+
+            }
+
+            else {
+
+                score = Math.max(0, score - 2);
+
+                wrongCount++;
+
+                document.getElementById("score").textContent =
+                    score;
+
+                document.getElementById("wrongCount").textContent =
+                    wrongCount;
+
+
+                card.classList.add("wrong");
+
+
+                message.className =
+                    "mt-5 p-4 rounded-xl bg-red-100 text-red-800";
+
+                message.innerHTML =
+                    `❌ Энэ биш. <b>10${powerText(selectedPower)}</b>-ийн ` +
+                    `утгыг дахин бодоорой.`;
+
+            }
+
+        }
+
+
+        /*
+          -----------------------------------------
+          HINT
+          -----------------------------------------
+        */
+
+        function showHint() {
+
+            const message =
+                document.getElementById("matchMessage");
+
+
+            if (selectedPower === null) {
+
+                message.className =
+                    "mt-5 p-4 rounded-xl bg-amber-100 text-amber-800";
+
+                message.textContent =
+                    "💡 Эхлээд нэг зэргийн картыг сонго.";
+
+                return;
+
+            }
+
+
+            if (selectedPower > 0) {
+
+                message.className =
+                    "mt-5 p-4 rounded-xl bg-blue-100 text-blue-800";
+
+                message.innerHTML =
+                    `💡 <b>10${powerText(selectedPower)}</b> бол ` +
+                    `1-ийг 10-аар ${selectedPower} удаа үржүүлсэнтэй адил.`;
+
+            }
+
+            else if (selectedPower < 0) {
+
+                message.className =
+                    "mt-5 p-4 rounded-xl bg-blue-100 text-blue-800";
+
+                message.innerHTML =
+                    `💡 <b>10${powerText(selectedPower)}</b> бол ` +
+                    `1-ийг 10-аар ${Math.abs(selectedPower)} удаа хуваасан гэсэн үг.`;
+
+            }
+
+            else {
+
+                message.className =
+                    "mt-5 p-4 rounded-xl bg-blue-100 text-blue-800";
+
+                message.innerHTML =
+                    "💡 <b>10⁰ = 1</b>";
+
+            }
+
+        }
+
+
+        /*
+          -----------------------------------------
+          QUIZ MODE
+          -----------------------------------------
+        */
+
+        let quizAnswer = null;
+
+
+        function createQuiz() {
+
+            const question =
+                powers[Math.floor(Math.random() * powers.length)];
+
+            quizAnswer = question;
+
+
+            document.getElementById("quizQuestion").textContent =
+                `10${powerText(question)} = ?`;
+
+
+            const answers = new Set();
+
+            answers.add(question);
+
+            while (answers.size < 4) {
+
+                const random =
+                    powers[Math.floor(Math.random() * powers.length)];
+
+                answers.add(random);
+
+            }
+
+
+            const shuffled =
+                [...answers].sort(
+                    () => Math.random() - 0.5
+                );
+
+
+            const container =
+                document.getElementById("quizAnswers");
+
+            container.innerHTML = "";
+
+
+            shuffled.forEach(n => {
+
+                const button =
+                    document.createElement("button");
+
+                button.className =
+                    "p-4 rounded-xl border-2 border-slate-200 " +
+                    "hover:border-indigo-400 hover:bg-indigo-50 " +
+                    "font-bold text-lg";
+
+                button.textContent =
+                    formatValue(powerValue(n));
+
+                button.onclick = () => {
+
+                    checkQuiz(n);
+
+                };
+
+                container.appendChild(button);
+
+            });
+
+        }
+
+
+        function checkQuiz(answer) {
+
+            const message =
+                document.getElementById("quizMessage");
+
+
+            if (answer === quizAnswer) {
+
+                score += 10;
+
+                correctCount++;
+
+                message.className =
+                    "mt-5 p-4 rounded-xl bg-green-100 text-green-800";
+
+                message.innerHTML =
+                    `🎉 Зөв! 10${powerText(quizAnswer)} = ` +
+                    `<b>${formatValue(powerValue(quizAnswer))}</b>`;
+
+            }
+
+            else {
+
+                score = Math.max(0, score - 2);
+
+                wrongCount++;
+
+                message.className =
+                    "mt-5 p-4 rounded-xl bg-red-100 text-red-800";
+
+                message.innerHTML =
+                    `❌ Дахин бодоорой. ` +
+                    `10${powerText(quizAnswer)} = ` +
+                    `<b>${formatValue(powerValue(quizAnswer))}</b>`;
+
+            }
+
+
+            document.getElementById("score").textContent =
+                score;
+
+            document.getElementById("correctCount").textContent =
+                correctCount;
+
+            document.getElementById("wrongCount").textContent =
+                wrongCount;
+
+
+            setTimeout(() => {
+
+                createQuiz();
+
+            }, 1200);
+
+        }
+
+
+        /*
+          -----------------------------------------
+          MODE SWITCH
+          -----------------------------------------
+        */
+
+        function setMode(newMode) {
+
+            mode = newMode;
+
+
+            const matchSection =
+                document.getElementById("matchSection");
+
+            const quizSection =
+                document.getElementById("quizSection");
+
+
+            const matchButton =
+                document.getElementById("matchModeBtn");
+
+            const quizButton =
+                document.getElementById("quizModeBtn");
+
+
+            if (mode === "match") {
+
+                matchSection.classList.remove("hidden");
+                quizSection.classList.add("hidden");
+
+                matchButton.className =
+                    "px-4 py-2 rounded-xl bg-indigo-600 text-white font-semibold";
+
+                quizButton.className =
+                    "px-4 py-2 rounded-xl bg-slate-200 font-semibold";
+
+            }
+
+            else {
+
+                matchSection.classList.add("hidden");
+                quizSection.classList.remove("hidden");
+
+                matchButton.className =
+                    "px-4 py-2 rounded-xl bg-slate-200 font-semibold";
+
+                quizButton.className =
+                    "px-4 py-2 rounded-xl bg-indigo-600 text-white font-semibold";
+
+                createQuiz();
+
+            }
+
+        }
+
+
+        /*
+          -----------------------------------------
+          NEW GAME
+          -----------------------------------------
+        */
+
+        function newGame() {
+
+            score = 0;
+            correctCount = 0;
+            wrongCount = 0;
+
+            currentExponent = 0;
+
+            document.getElementById("score").textContent =
+                "0";
+
+            document.getElementById("correctCount").textContent =
+                "0";
+
+            document.getElementById("wrongCount").textContent =
+                "0";
+
+
+            document.getElementById("matchMessage").className =
+                "mt-5 p-4 rounded-xl hidden";
+
+
+            updateCurrentPower();
+
+            createMatchCards();
+
+            if (mode === "quiz") {
+                createQuiz();
+            }
+
+        }
+
+
+        /*
+          -----------------------------------------
+          START
+          -----------------------------------------
+        */
+
+        updateCurrentPower();
+
+        createMatchCards();
+
+    </script>
+
+</body>
+
+</html>
